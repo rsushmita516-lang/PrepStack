@@ -1,0 +1,16 @@
+# Server
+server/node_modules/
+server/.env
+server/.env.local
+
+# Frontend
+frontend/node_modules/
+frontend/build/
+frontend/.env.local
+
+# General
+node_modules/
+.DS_Store
+*.log
+.idea/
+.vscode/
