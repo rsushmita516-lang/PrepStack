@@ -1,6 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import api from '../api/api';
+import {
+  Box,
+  Typography,
+  Paper,
+  Grid,
+  List,
+  ListItem,
+  ListItemText,
+  Chip,
+} from '@mui/material';
 
 const DashboardPage = () => {
   const { backendUser, loading } = useAuth();
@@ -25,30 +35,49 @@ const DashboardPage = () => {
   if (!backendUser) return <div>Please log in</div>;
 
   return (
-    <div>
-      <h1>Welcome, {backendUser.displayName || backendUser.email}!</h1>
-      {stats && (
-        <div>
-          <h2>Your Stats</h2>
-          <div>
-            <h3>Problems Solved by Tag:</h3>
-            <ul>
-              {Object.entries(stats.tagCounts).map(([tag, count]) => (
-                <li key={tag}>{tag}: {count}</li>
-              ))}
-            </ul>
-          </div>
-          <div>
-            <h3>Badges:</h3>
-            <ul>
-              {stats.badges.map((badge, index) => (
-                <li key={index}>{badge}</li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      )}
-    </div>
+    <Box>
+      <Typography variant="h4" gutterBottom>
+        Welcome, {backendUser.displayName || backendUser.email}!
+      </Typography>
+
+      <Grid container spacing={2}>
+        <Grid item xs={12} md={6}>
+          <Paper sx={{ p: 3 }} elevation={3}>
+            <Typography variant="h6" gutterBottom>
+              Problem Solving Stats
+            </Typography>
+            {stats ? (
+              <List>
+                {Object.entries(stats.tagCounts).map(([tag, count]) => (
+                  <ListItem key={tag} disableGutters>
+                    <ListItemText primary={`${tag}: ${count}`} />
+                  </ListItem>
+                ))}
+              </List>
+            ) : (
+              <Typography variant="body2">No stats available.</Typography>
+            )}
+          </Paper>
+        </Grid>
+
+        <Grid item xs={12} md={6}>
+          <Paper sx={{ p: 3 }} elevation={3}>
+            <Typography variant="h6" gutterBottom>
+              Badges
+            </Typography>
+            {stats && stats.badges.length > 0 ? (
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                {stats.badges.map((badge) => (
+                  <Chip key={badge} label={badge} color="secondary" />
+                ))}
+              </Box>
+            ) : (
+              <Typography variant="body2">No badges earned yet. Keep solving!</Typography>
+            )}
+          </Paper>
+        </Grid>
+      </Grid>
+    </Box>
   );
 };
 

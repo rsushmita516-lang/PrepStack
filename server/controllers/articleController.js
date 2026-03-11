@@ -27,6 +27,18 @@ exports.getArticles = async (req, res) => {
   }
 };
 
+exports.updateArticle = async (req, res) => {
+  try {
+    const updated = await Article.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    });
+    res.json(updated);
+  } catch (err) {
+    console.error('updateArticle error', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
 exports.deleteArticle = async (req, res) => {
   try {
     await Article.findByIdAndDelete(req.params.id);
