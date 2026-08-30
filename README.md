@@ -12,7 +12,7 @@
 A modern interview preparation platform built to help developers organize coding practice, track progress, and save valuable learning resources in one place.
 
 <p align="center">
-  <img src="docs/screenshots/login.png" alt="PrepStack login screen" width="100%" />
+  <img src="docs/screenshots/login-full.png" alt="PrepStack login screen" width="100%" />
 </p>
 
 ## Overview
@@ -42,12 +42,6 @@ The project combines a React frontend, an Express backend, MongoDB data storage,
 
 <p align="center">
   <img src="docs/screenshots/login.png" alt="PrepStack authentication screen" width="100%" />
-</p>
-
-### Sign-up view
-
-<p align="center">
-  <img src="docs/screenshots/login-alt.png" alt="PrepStack sign-up view" width="100%" />
 </p>
 
 ### Dashboard
