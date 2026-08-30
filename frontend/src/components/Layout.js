@@ -8,11 +8,26 @@ export default function Layout({ children }) {
   const hideNavbarPaths = ['/login'];
 
   return (
-    <>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        background: 'linear-gradient(180deg, #dff4ff 0%, #cfeeff 28%, #eaf7ff 100%)',
+      }}
+    >
       {!hideNavbarPaths.includes(location.pathname) && <Navbar />}
-      <Box component="main" sx={{ mt: hideNavbarPaths.includes(location.pathname) ? 0 : 10, mb: 4 }}>
-        <Container maxWidth="lg">{children}</Container>
+
+      <Box
+        component="main"
+        sx={{
+          flex: 1,
+          pt: hideNavbarPaths.includes(location.pathname) ? 0 : 3,
+          pb: 6,
+        }}
+      >
+        <Container maxWidth="xl">{children}</Container>
       </Box>
-    </>
+    </Box>
   );
 }

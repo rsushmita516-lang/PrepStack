@@ -1,6 +1,7 @@
 import './App.css';
 
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Box, CircularProgress, Stack } from '@mui/material';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Layout from './components/Layout';
 import LoginPage from './pages/LoginPage';
@@ -8,10 +9,19 @@ import DashboardPage from './pages/DashboardPage';
 import ProblemsPage from './pages/ProblemsPage';
 import ArticlesPage from './pages/ArticlesPage';
 
-// Protected Route component for authenticated pages
 const ProtectedRoute = ({ children }) => {
   const { firebaseUser, loading } = useAuth();
-  if (loading) return <div>Loading...</div>;
+
+  if (loading) {
+    return (
+      <Box sx={{ display: 'grid', placeItems: 'center', minHeight: '60vh' }}>
+        <Stack alignItems="center" spacing={2}>
+          <CircularProgress size={42} />
+        </Stack>
+      </Box>
+    );
+  }
+
   return firebaseUser ? children : <Navigate to="/login" replace />;
 };
 

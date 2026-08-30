@@ -17,15 +17,19 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Fab,
   IconButton,
+  Alert,
+  LinearProgress,
 } from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
+import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
+import MenuBookRoundedIcon from '@mui/icons-material/MenuBookRounded';
 
 const ArticlesPage = () => {
   const { backendUser, loading } = useAuth();
   const [articles, setArticles] = useState([]);
+  const [pageLoading, setPageLoading] = useState(true);
+  const [error, setError] = useState('');
   const [newArticle, setNewArticle] = useState({
     title: '',
     content: '',
@@ -43,15 +47,22 @@ const ArticlesPage = () => {
   useEffect(() => {
     if (backendUser) {
       fetchArticles();
+    } else {
+      setPageLoading(false);
     }
   }, [backendUser]);
 
   const fetchArticles = async () => {
     try {
+      setPageLoading(true);
+      setError('');
       const response = await api.get('/articles');
       setArticles(response.data);
-    } catch (error) {
-      console.error('Error fetching articles:', error);
+    } catch (err) {
+      console.error('Error fetching articles:', err);
+      setError('Unable to load your saved articles.');
+    } finally {
+      setPageLoading(false);
     }
   };
 
@@ -66,8 +77,9 @@ const ArticlesPage = () => {
       setNewArticle({ title: '', content: '', tags: '' });
       setOpenCreate(false);
       fetchArticles();
-    } catch (error) {
-      console.error('Error creating article:', error);
+    } catch (err) {
+      console.error('Error creating article:', err);
+      setError('Could not save the article.');
     }
   };
 
@@ -104,8 +116,9 @@ const ArticlesPage = () => {
       });
       cancelEditing();
       fetchArticles();
-    } catch (error) {
-      console.error('Error saving article:', error);
+    } catch (err) {
+      console.error('Error saving article:', err);
+      setError('Could not update the article.');
     }
   };
 
@@ -113,8 +126,9 @@ const ArticlesPage = () => {
     try {
       await api.delete(`/articles/${articleId}`);
       fetchArticles();
-    } catch (error) {
-      console.error('Error deleting article:', error);
+    } catch (err) {
+      console.error('Error deleting article:', err);
+      setError('Could not delete the article.');
     }
   };
 
@@ -127,27 +141,36 @@ const ArticlesPage = () => {
         tags: tagsArray,
       });
       fetchArticles();
-    } catch (error) {
-      console.error('Error duplicating article:', error);
+    } catch (err) {
+      console.error('Error duplicating article:', err);
+      setError('Could not duplicate the article.');
     }
   };
 
-  if (loading) return <div>Loading...</div>;
-  if (!backendUser) return <div>Please log in</div>;
+  if (loading) return <Box sx={{ py: 6 }}><LinearProgress /></Box>;
+  if (!backendUser) return <Typography>Please log in</Typography>;
 
   return (
-    <Box>
-      <Typography variant="h4" gutterBottom>
-        Articles
-      </Typography>
+    <Box sx={{ py: 2 }}>
+      <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', md: 'center' }} spacing={2} sx={{ mb: 3 }}>
+        <Box>
+          <Typography variant="overline" color="primary.main" sx={{ fontWeight: 700, letterSpacing: 1.4 }}>
+            Knowledge base
+          </Typography>
+          <Typography variant="h3" sx={{ fontWeight: 800, letterSpacing: '-0.05em' }}>
+            Saved articles
+          </Typography>
+        </Box>
+        <Button variant="contained" startIcon={<AddIcon />} onClick={openCreateDialog}>
+          Add article
+        </Button>
+      </Stack>
 
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        Your saved articles appear below. Use the button in the bottom-right to add a new one.
-      </Typography>
+      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
       <Dialog open={openCreate} onClose={closeCreateDialog} fullWidth maxWidth="sm">
         <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          Share an Article or Resource
+          Share a useful article
           <IconButton onClick={closeCreateDialog} size="small">
             <CloseIcon />
           </IconButton>
@@ -155,127 +178,101 @@ const ArticlesPage = () => {
         <Box component="form" onSubmit={handleCreateArticle} noValidate>
           <DialogContent dividers>
             <Stack spacing={2}>
-              <TextField
-                label="Title"
-                value={newArticle.title}
-                onChange={(e) => setNewArticle({ ...newArticle, title: e.target.value })}
-                fullWidth
-                required
-              />
-              <TextField
-                label="Content"
-                value={newArticle.content}
-                onChange={(e) => setNewArticle({ ...newArticle, content: e.target.value })}
-                fullWidth
-                multiline
-                minRows={4}
-                required
-              />
-              <TextField
-                label="Tags (comma-separated)"
-                value={newArticle.tags}
-                onChange={(e) => setNewArticle({ ...newArticle, tags: e.target.value })}
-                fullWidth
-              />
+              <TextField label="Title" value={newArticle.title} onChange={(e) => setNewArticle({ ...newArticle, title: e.target.value })} fullWidth required />
+              <TextField label="Content" value={newArticle.content} onChange={(e) => setNewArticle({ ...newArticle, content: e.target.value })} fullWidth multiline minRows={4} required />
+              <TextField label="Tags (comma-separated)" value={newArticle.tags} onChange={(e) => setNewArticle({ ...newArticle, tags: e.target.value })} fullWidth />
             </Stack>
           </DialogContent>
           <DialogActions>
             <Button onClick={closeCreateDialog}>Cancel</Button>
-            <Button type="submit" variant="contained">
-              Add
-            </Button>
+            <Button type="submit" variant="contained">Add</Button>
           </DialogActions>
         </Box>
       </Dialog>
 
-      <Fab
-        color="primary"
-        aria-label="open menu"
-        onClick={openCreateDialog}
-        sx={{ position: 'fixed', bottom: 24, right: 24 }}
-      >
-        <MenuIcon />
-      </Fab>
-
-      <Grid container spacing={2} justifyContent="center">
-        {articles.map((article) => {
-          const isEditing = editingId === article._id;
-          return (
-            <Grid item xs={12} md={10} key={article._id}>
-              <Card>
-                <CardContent>
-                  {isEditing ? (
-                    <Stack spacing={2}>
-                      <TextField
-                        label="Title"
-                        value={editingValues.title}
-                        onChange={(e) => setEditingValues({ ...editingValues, title: e.target.value })}
-                        fullWidth
-                      />
-                      <TextField
-                        label="Content"
-                        value={editingValues.content}
-                        onChange={(e) => setEditingValues({ ...editingValues, content: e.target.value })}
-                        fullWidth
-                        multiline
-                        minRows={4}
-                      />
-                      <TextField
-                        label="Tags (comma-separated)"
-                        value={editingValues.tags}
-                        onChange={(e) => setEditingValues({ ...editingValues, tags: e.target.value })}
-                        fullWidth
-                      />
-                    </Stack>
-                  ) : (
-                    <>
-                      <Typography variant="h6" gutterBottom>
-                        {article.title}
-                      </Typography>
-                      <Typography variant="body2" sx={{ mb: 1 }}>
-                        {article.content}
-                      </Typography>
-                      <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', mb: 1 }}>
-                        {(article.tags || []).map((tag) => (
-                          <Chip key={tag} label={tag} size="small" />
-                        ))}
+      {pageLoading ? (
+        <LinearProgress />
+      ) : articles.length === 0 ? (
+        <Card>
+          <CardContent sx={{ textAlign: 'center', py: 6 }}>
+            <MenuBookRoundedIcon color="primary" sx={{ mb: 2, fontSize: 48 }} />
+            <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>No articles saved yet</Typography>
+            <Typography variant="body2" color="text.secondary">
+              Save the resources you want to revisit later while preparing for interviews.
+            </Typography>
+          </CardContent>
+        </Card>
+      ) : (
+        <Grid container spacing={3}>
+          {articles.map((article) => {
+            const isEditing = editingId === article._id;
+            return (
+              <Grid item xs={12} md={6} key={article._id}>
+                <Card
+                  sx={{
+                    height: '100%',
+                    transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                    '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 18px 36px rgba(15, 23, 42, 0.08)' },
+                  }}
+                >
+                  <CardContent sx={{ pb: 1 }}>
+                    {isEditing ? (
+                      <Stack spacing={2}>
+                        <TextField label="Title" value={editingValues.title} onChange={(e) => setEditingValues({ ...editingValues, title: e.target.value })} fullWidth />
+                        <TextField label="Content" value={editingValues.content} onChange={(e) => setEditingValues({ ...editingValues, content: e.target.value })} fullWidth multiline minRows={4} />
+                        <TextField label="Tags (comma-separated)" value={editingValues.tags} onChange={(e) => setEditingValues({ ...editingValues, tags: e.target.value })} fullWidth />
                       </Stack>
-                      <Typography variant="caption" color="text.secondary">
-                        By: {article.author?.displayName || article.author?.email}
-                      </Typography>
-                    </>
-                  )}
-                </CardContent>
-                <Divider />
-                <CardActions>
-                  {isEditing ? (
-                    <>
-                      <Button size="small" onClick={() => handleSaveEdit(article._id)}>
-                        Save
-                      </Button>
-                      <Button size="small" onClick={cancelEditing}>
-                        Cancel
-                      </Button>
-                    </>
-                  ) : (
-                    <>
-                      <Button size="small" onClick={() => startEditing(article)}>
-                        Edit
-                      </Button>
-                      <Button size="small" onClick={() => handleDuplicateArticle(article)}>
-                        Save as New
-                      </Button>
-                      <Button size="small" color="error" onClick={() => handleDeleteArticle(article._id)}>
-                        Delete
-                      </Button>
-                    </>
-                  )}
-                </CardActions>
-              </Card>
-            </Grid>
-          );
-        })}
-      </Grid>
+                    ) : (
+                      <>
+                        <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
+                          {article.title}
+                        </Typography>
+                        <Typography variant="body2" sx={{ mb: 2, whiteSpace: 'pre-wrap' }}>
+                          {article.content}
+                        </Typography>
+                        <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mb: 1 }}>
+                          {(article.tags || []).map((tag) => (
+                            <Chip key={tag} label={tag} size="small" variant="outlined" />
+                          ))}
+                        </Stack>
+                        <Typography variant="caption" color="text.secondary">
+                          By: {article.author?.displayName || article.author?.email || 'Unknown author'}
+                        </Typography>
+                      </>
+                    )}
+                  </CardContent>
+
+                  <Divider />
+                  <CardActions sx={{ p: 2, flexWrap: 'wrap', gap: 1 }}>
+                    {isEditing ? (
+                      <>
+                        <Button size="small" variant="contained" onClick={() => handleSaveEdit(article._id)}>
+                          Save
+                        </Button>
+                        <Button size="small" onClick={cancelEditing}>
+                          Cancel
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <Button size="small" variant="outlined" onClick={() => startEditing(article)}>
+                          Edit
+                        </Button>
+                        <Button size="small" variant="outlined" onClick={() => handleDuplicateArticle(article)}>
+                          Duplicate
+                        </Button>
+                        <Button size="small" color="error" onClick={() => handleDeleteArticle(article._id)}>
+                          Delete
+                        </Button>
+                      </>
+                    )}
+                  </CardActions>
+                </Card>
+              </Grid>
+            );
+          })}
+        </Grid>
+      )}
     </Box>
   );
 };

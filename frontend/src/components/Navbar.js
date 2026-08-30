@@ -1,13 +1,24 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import AppBar from '@mui/material/AppBar';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-import Box from '@mui/material/Box';
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Button,
+  Box,
+  Stack,
+  Avatar,
+  Chip,
+} from '@mui/material';
 import { useAuth } from '../hooks/useAuth';
 import { signOut } from 'firebase/auth';
 import { auth } from '../firebase';
+
+const navItems = [
+  { label: 'Dashboard', to: '/dashboard' },
+  { label: 'Problems', to: '/problems' },
+  { label: 'Articles', to: '/articles' },
+];
 
 const Navbar = () => {
   const { firebaseUser, backendUser } = useAuth();
@@ -23,65 +34,63 @@ const Navbar = () => {
   };
 
   return (
-    <AppBar position="fixed">
-      <Toolbar sx={{ justifyContent: 'space-between' }}>
-<Box
-        component={Link}
-        to="/dashboard"
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1,
-          textDecoration: 'none',
-          color: 'inherit',
-        }}
-      >
-        <Box
-          sx={{
-            width: 32,
-            height: 32,
-            borderRadius: 1,
-            bgcolor: 'secondary.main',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <Typography variant="subtitle2" sx={{ color: 'white', fontWeight: 'bold' }}>
+    <AppBar
+      position="sticky"
+      elevation={0}
+      sx={{
+        background: 'rgba(255,255,255,0.82)',
+        color: 'text.primary',
+        borderBottom: '1px solid rgba(148, 163, 184, 0.2)',
+        backdropFilter: 'blur(12px)',
+      }}
+    >
+      <Toolbar sx={{ justifyContent: 'space-between', minHeight: 72, px: { xs: 2, md: 4 } }}>
+        <Box component={Link} to={firebaseUser ? '/dashboard' : '/login'} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, textDecoration: 'none', color: 'inherit' }}>
+          <Avatar
+            sx={{
+              width: 36,
+              height: 36,
+              bgcolor: 'linear-gradient(135deg, #2563eb, #14b8a6)',
+              background: 'linear-gradient(135deg, #2563eb, #14b8a6)',
+              fontWeight: 800,
+              fontSize: '0.95rem',
+            }}
+          >
             P
-          </Typography>
-        </Box>
-        <Typography variant="h6" sx={{ color: 'inherit', textDecoration: 'none' }}>
+          </Avatar>
+          <Typography variant="h6" sx={{ fontWeight: 800, letterSpacing: '-0.04em', color: 'inherit' }}>
             PrepStack
           </Typography>
         </Box>
 
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Button component={Link} to="/dashboard" color="inherit">
-            Dashboard
-          </Button>
-          <Button component={Link} to="/problems" color="inherit">
-            Problems
-          </Button>
-          <Button component={Link} to="/articles" color="inherit">
-            Articles
-          </Button>
-
-          {firebaseUser ? (
-            <>
-              <Typography variant="body2" sx={{ mx: 2 }}>
-                {backendUser?.displayName || firebaseUser.email}
-              </Typography>
-              <Button color="inherit" onClick={handleLogout}>
-                Logout
+        {firebaseUser ? (
+          <Stack direction="row" spacing={1} alignItems="center" sx={{ display: { xs: 'none', md: 'flex' } }}>
+            {navItems.map((item) => (
+              <Button
+                key={item.to}
+                component={Link}
+                to={item.to}
+                color="inherit"
+                sx={{ color: 'text.primary', fontWeight: 600 }}
+              >
+                {item.label}
               </Button>
-            </>
-          ) : (
-            <Button component={Link} to="/login" color="inherit">
-              Login
+            ))}
+
+            <Chip
+              label={backendUser?.displayName || firebaseUser.email}
+              variant="outlined"
+              sx={{ ml: 1, fontWeight: 600 }}
+            />
+            <Button onClick={handleLogout} variant="contained" color="primary">
+              Logout
             </Button>
-          )}
-        </Box>
+          </Stack>
+        ) : (
+          <Button component={Link} to="/login" variant="contained" sx={{ borderRadius: 999 }}>
+            Login
+          </Button>
+        )}
       </Toolbar>
     </AppBar>
   );

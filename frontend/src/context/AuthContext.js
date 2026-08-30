@@ -3,7 +3,6 @@ import { auth } from '../firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import axios from 'axios';
 
-// The context will hold the current Firebase user and our backend user record
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
@@ -12,24 +11,31 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // listen for auth state changes
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setFirebaseUser(user);
+
       if (user) {
-        // get ID token to call backend
-        const token = await user.getIdToken();
-        localStorage.setItem('firebaseToken', token); // Store token
-        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        // hit our verify route to create/get user document
-        const res = await axios.get('/api/auth/verify');
-        setBackendUser(res.data);
+        try {
+          const token = await user.getIdToken();
+          localStorage.setItem('firebaseToken', token);
+          axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+          const res = await axios.get('/api/auth/verify');
+          setBackendUser(res.data);
+        } catch (error) {
+          console.error('Auth verify failed:', error);
+          setBackendUser(null);
+          localStorage.removeItem('firebaseToken');
+          delete axios.defaults.headers.common['Authorization'];
+        }
       } else {
         setBackendUser(null);
-        localStorage.removeItem('firebaseToken'); // Remove token
+        localStorage.removeItem('firebaseToken');
         delete axios.defaults.headers.common['Authorization'];
       }
+
       setLoading(false);
     });
+
     return unsubscribe;
   }, []);
 
@@ -40,5 +46,4 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-// Custom hook to use the AuthContext
 export const useAuth = () => useContext(AuthContext);
