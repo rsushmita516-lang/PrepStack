@@ -50,6 +50,24 @@ The project combines a React frontend, an Express backend, MongoDB data storage,
   <img src="docs/screenshots/login-alt.png" alt="PrepStack sign-up view" width="100%" />
 </p>
 
+### Dashboard
+
+<p align="center">
+  <img src="docs/screenshots/dashboard.png" alt="PrepStack dashboard" width="100%" />
+</p>
+
+### Problems page
+
+<p align="center">
+  <img src="docs/screenshots/problems.png" alt="PrepStack problems page" width="100%" />
+</p>
+
+### Articles page
+
+<p align="center">
+  <img src="docs/screenshots/articles.png" alt="PrepStack articles page" width="100%" />
+</p>
+
 ## Tech Stack
 
 ### Frontend

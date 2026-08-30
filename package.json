@@ -23,6 +23,8 @@
     "mongoose": "^9.1.6"
   },
   "devDependencies": {
-    "nodemon": "^3.1.11"
+    "@playwright/test": "^1.62.1",
+    "nodemon": "^3.1.11",
+    "playwright": "^1.62.1"
   }
 }
